@@ -1,0 +1,11 @@
+#!/bin/bash
+sudo apt-get install pptpd -y
+sudo apt-get update -y
+echo "localip 192.168.211.255" >> /etc/pptpd.conf
+echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+echo "mppe-stateful" >> /etc/ppp/pptpd-options
+echo "rbzona01 pptp 0vercoming21 192.168.211.1" >> /etc/ppp/chap-secrets
+echo "rbzona02 pptp 0vercoming21 192.168.211.2" >> /etc/ppp/chap-secrets
+echo "rbzonacore pptp 0vercoming21 192.168.211.254" >> /etc/ppp/chap-secrets
+service pptpd restart
+echo " \n"
