@@ -1,56 +1,60 @@
 #!/bin/bash
 
-#SERVER INSTALAR APACHE2
-apt update -y && sudo apt upgrade -y
+#SERVER
+sudo apt update -y && sudo apt upgrade -y
+
+#Herramientas
+sudo timedatectl set-timezone America/Caracas
+sudo apt -y install net-tools
 
 #INSTALAR APACHE2
-apt install apache2 -y
+sudo apt install apache2 -y
 
 #INSTALAR PHP8.0
-add-apt-repository ppa:ondrej/php -y
-apt-get update -y
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt-get update -y
 
-apt install libapache2-mod-php8.0 php8.0 php8.0-common php8.0-fpm php8.0-mysql php8.0-xml php8.0-xmlrpc php8.0-curl php8.0-gd php8.0-imagick php8.0-dev php8.0-imap php8.0-mbstring php8.0-opcache php8.0-soap php8.0-zip php8.0-intl -y
+sudo apt install libapache2-mod-php8.0 php8.0 php8.0-common php8.0-fpm php8.0-mysql php8.0-xml php8.0-xmlrpc php8.0-curl php8.0-gd php8.0-imagick php8.0-dev php8.0-imap php8.0-mbstring php8.0-opcache php8.0-soap php8.0-zip php8.0-intl -y
 
-a2enmod proxy_fcgi setenvif
-a2enconf php8.0-fpm
-service apache2 restart
+sudo a2enmod proxy_fcgi setenvif
+sudo a2enconf php8.0-fpm
+sudo service apache2 restart
 
 #INSTALAR CONECTOR CON SQL SERVER
-curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
+sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+sudo curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
 
-apt-get update -y
-ACCEPT_EULA=Y apt-get install -y msodbcsql17
-ACCEPT_EULA=Y apt-get install -y mssql-tools
+sudo apt-get update -y
+sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17
+sudo ACCEPT_EULA=Y apt-get install -y mssql-tools
 echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 source ~/.bashrc
-apt-get install -y unixodbc-dev
+sudo apt-get install unixodbc-dev -y
 
-pecl config-set php_ini /etc/php/8.0/fpm/php.ini
-pecl install sqlsrv
-pecl install pdo_sqlsrv
+sudo pecl config-set php_ini /etc/php/8.0/fpm/php.ini
+sudo pecl install sqlsrv
+sudo pecl install pdo_sqlsrv
 printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.0/mods-available/sqlsrv.ini
 printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.0/mods-available/pdo_sqlsrv.ini
-phpenmod -v 8.0 sqlsrv pdo_sqlsrv
+sudo phpenmod -v 8.0 sqlsrv pdo_sqlsrv
 
 echo "extension=odbc" >> /etc/php/8.0/fpm/php.ini
 echo "extension=pdo_mysql" >> /etc/php/8.0/fpm/php.ini
 echo "extension=pdo_sqlsrv" >> /etc/php/8.0/fpm/php.ini
 echo "extension=pdo_odbc" >> /etc/php/8.0/fpm/php.ini
 
-systemctl restart php8.0-fpm
+sudo systemctl restart php8.0-fpm
 
-systemctl restart apache2
+sudo systemctl restart apache2
 
 #MYSQL
 
 ROOTBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 15 | xargs)"
 wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 
-apt install mariadb-server -y
+sudo apt install mariadb-server -y
 
-apt -y install expect
+sudo apt -y install expect
 
 SECURE_MYSQL=$(expect -c "
 set timeout 10
@@ -101,21 +105,24 @@ EOT
 
 
 #sudo chown -R www-data:www-data /var/www/html/
-a2enmod rewrite
-a2dismod php8.0
-systemctl restart apache2
+sudo a2enmod rewrite
+sudo a2dismod php8.0 
+sudo systemctl restart apache2
 
-apt install zip
+sudo apt install zip -y
 
 #COMPOSER
 curl -sS https://getcomposer.org/installer -o composer-setup.php
 HASH=`curl -sS https://composer.github.io/installer.sig`
 echo $HASH
 php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 echo " \n"
 
+apt update -y && apt install certbot python3-certbot-apache -y
 
+#certbot certonly --standalone --agree-tos --preferred-challenges http -d pruebas.wisplayservidores.com
+#certbot renew --dry-run
 
 IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
 echo " \n"
