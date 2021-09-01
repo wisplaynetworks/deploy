@@ -124,6 +124,12 @@ apt update -y && apt install certbot python3-certbot-apache -y
 #certbot certonly --standalone --agree-tos --preferred-challenges http -d pruebas.wisplayservidores.com
 #certbot renew --dry-run
 
+cat << EOF > /var/www/html/info.php
+<?php
+phpinfo();
+EOF
+echo " \n"
+
 IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
 echo " \n"
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
