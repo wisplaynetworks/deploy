@@ -166,14 +166,14 @@ if [ -z "$wan" ]
 		sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE && iptables-save
 		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
         iptables -A INPUT -p 47 -j ACCEPT
-        iptables -A OUTPUT -p 47 -j ACCEP
+        iptables -A OUTPUT -p 47 -j ACCEPT
 		$("sudo iptables -I INPUT -s $ip/24 -i ppp0 -j ACCEPT")
 		sudo iptables --append FORWARD --in-interface wlan0 -j ACCEPT
 	else
 		sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE && iptables-save
 		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
         iptables -A INPUT -p 47 -j ACCEPT
-        iptables -A OUTPUT -p 47 -j ACCEP
+        iptables -A OUTPUT -p 47 -j ACCEPT
 		$("sudo iptables -I INPUT -s $ip/24 -i ppp0 -j ACCEPT")
 		sudo iptables --append FORWARD --in-interface eth0 -j ACCEPT
 fi
