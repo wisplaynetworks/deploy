@@ -1,7 +1,3 @@
 wget https://raw.githubusercontent.com/wisplaynetworks/deploy/master/install
 bash install
 echo " \n"
-
-
-
-sed 's/bind-address            = 127.0.0.1/bind-address            = 0.0.0.0/g' input > /etc/mysql/mariadb.conf.d/50-server.cnf
