@@ -43,3 +43,6 @@ fi
 ppp1=$(/sbin/ip route | awk '/default/ { print $3 }') # 192.168.238.255
 
 clear
+
+
+IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
