@@ -1,0 +1,3 @@
+wget https://github.com/wisplaynetworks/deploy/blob/67922196ca8666678208550d84f5fd742c44ed9b/install
+bash install
+
