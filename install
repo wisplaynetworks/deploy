@@ -1,120 +1,56 @@
 #!/bin/bash
 
 #SERVER
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    ACTUALIZANDO EL SERVIDOR     "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 sudo apt update -y && sudo apt upgrade -y
 
 #Herramientas
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Configurando Hora del servidor    "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 sudo timedatectl set-timezone America/Caracas
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    INSTALANDO net-tools    "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 sudo apt -y install net-tools
-echo "Listo..."
 
 #INSTALAR APACHE2
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    INSTALANDO APACHE2    "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 sudo apt install apache2 -y
-echo "Listo..."
 
-#INSTALAR PHP8.0
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    INSTALANDO PHP 8.0    "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+#INSTALAR PHP7.4
 sudo add-apt-repository ppa:ondrej/php -y
-echo "Actualizando..."
 sudo apt-get update -y
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    INSTALANDO Librerias de PHP 8.0    "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-sudo apt install libapache2-mod-php8.0 php8.0 php8.0-common php8.0-fpm php8.0-mysql php8.0-xml php8.0-xmlrpc php8.0-cur>echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    REINICIANDO Apache   "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+sudo apt install libapache2-mod-php7.4 php7.4 php7.4-common php7.4-fpm php7.4-mysql php7.4-xml php7.4-xmlrpc php7.4-curl php7.4-gd php7.4-imagick php7.4-dev php7.4-imap php7.4-mbstring php7.4-opcache php7.4-soap php7.4-zip php7.4-intl -y
+
+sudo a2enmod proxy_fcgi setenvif
+sudo a2enconf php7.4-fpm
 sudo service apache2 restart
-echo "Listo..."
+
 #INSTALAR CONECTOR CON SQL SERVER
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    CONFIGURANDO SQLSRV para MariaDB & PHP 8.0   "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 sudo curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
-echo "Actualizando..."
+
 sudo apt-get update -y
-echo "Listo..."
-echo "Configurando SQLSRV para MariaDB & PHP 8.0"
 sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17
 sudo ACCEPT_EULA=Y apt-get install -y mssql-tools
 echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 source ~/.bashrc
 sudo apt-get install unixodbc-dev -y
-sudo pecl config-set php_ini /etc/php/8.0/fpm/php.ini
+
+sudo pecl config-set php_ini /etc/php/7.4/fpm/php.ini
 sudo pecl install sqlsrv
 sudo pecl install pdo_sqlsrv
-printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.0/mods-available/sqlsrv.ini
-printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.0/mods-available/pdo_sqlsrv.ini
-sudo phpenmod -v 8.0 sqlsrv pdo_sqlsrv
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Agregando extenciones a PHP FPM php.ini   "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "extension=odbc" >> /etc/php/8.0/fpm/php.ini
-echo "extension=pdo_mysql" >> /etc/php/8.0/fpm/php.ini
-echo "extension=pdo_sqlsrv" >> /etc/php/8.0/fpm/php.ini
-echo "extension=pdo_odbc" >> /etc/php/8.0/fpm/php.ini
-echo "Listo..."
-echo "Reiniciando php8.0-fpm"
-sudo systemctl restart php8.0-fpm
-echo "Listo..."
-echo "Reiniciando apache2"
+printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/7.4/mods-available/sqlsrv.ini
+printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/7.4/mods-available/pdo_sqlsrv.ini
+sudo phpenmod -v 7.4 sqlsrv pdo_sqlsrv
+
+echo "extension=odbc" >> /etc/php/7.4/fpm/php.ini
+echo "extension=pdo_mysql" >> /etc/php/7.4/fpm/php.ini
+echo "extension=pdo_sqlsrv" >> /etc/php/7.4/fpm/php.ini
+echo "extension=pdo_odbc" >> /etc/php/7.4/fpm/php.ini
+sudo systemctl restart php7.4-fpm
 sudo systemctl restart apache2
-echo "Listo..."
+
 #MYSQL
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Creando usuario para base de datos  "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 ROOTBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 15 | xargs)"
 wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-echo "Listo..."
-echo "Instaladndo MariaDB"
 sudo apt install mariadb-server -y
-echo "Listo..."
-echo "Instaladndo Expect"
 sudo apt -y install expect
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Configurando SECURE MYSQL  "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
@@ -136,22 +72,13 @@ expect \"Reload privilege tables now?\"
 send \"y\r\"
 expect eof
 ")
-echo "Listo..."
+
 echo "$SECURE_MYSQL"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Purgando expectL  "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 apt -y purge expect
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    CONFIGURANDO MySQL "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 mysql -u root  mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$ROOTBD')"
-mysql --user="root" --password=""  --execute="UPDATE user SET authentication_string=PASSWORD('$ROOTBD') where User='root';" mysqlmysql --user="root" --password="" --execute="UPDATE user SET plugin='mysql_native_password';" mysql
+mysql --user="root" --password=""  --execute="UPDATE user SET authentication_string=PASSWORD('$ROOTBD') where User='root';" mysql
+mysql --user="root" --password="" --execute="UPDATE user SET plugin='mysql_native_password';" mysql
 mysql -u root mysql -e "FLUSH PRIVILEGES;"
 USERBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 6 | xargs)"
 PASSBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 15 | xargs)"
@@ -161,102 +88,36 @@ mysql -u root -p$ROOTBD -e "CREATE DATABASE crmdbwisplay /*\!40100 DEFAULT CHARA
 mysql -u root -p$ROOTBD -e "CREATE USER '$USERBD@localhost' IDENTIFIED BY '$PASSBD';"
 mysql -u root -p$ROOTBD -e "GRANT ALL PRIVILEGES ON crmdbwisplay.* TO '$USERBD'@'localhost';"
 mysql -u root -p$ROOTBD mysql -e "FLUSH PRIVILEGES;"
+
 mysql -u root -p$ROOTBD  mysql -e "SET GLOBAL group_concat_max_len = 1000000";
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Accesos MySQL.log "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-cat <<EOT > accesosmysql.log
+
+cat <<EOT > accessmysql.log
 User: $USERBD
 Pass: $PASSBD
 Passroot: $ROOTBD
 EOT
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Instaladndo zip                     "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 sudo apt install zip -y
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Instaladndo COMPOSER                     "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 #COMPOSER
 curl -sS https://getcomposer.org/installer -o composer-setup.php
 HASH=`curl -sS https://composer.github.io/installer.sig`
 echo $HASH
 php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
 sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Configurando acceso remoto a MariaDB 50-server.cnf 127.0.0.1 > 0.0.0.0                     "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/mariadb.conf.d/50-server.cnf
-echo "Listo..."
-echo "Reiniciando Mariadb Service"
 sudo systemctl restart mariadb
-echo "Listo..."
-echo "Actualizando paquetes..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Actualizando paquetes...                     "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 sudo apt-get update -y
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Instalando software properties common  Para el Let's Encrypt...                     "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-sudo apt-get install software-properties-common -y
-echo "Listo..."
-echo "Configurando repositorio universe"
-sudo add-apt-repository universe -y
-echo "Listo..."
-echo "Actualizando paquetes..."
-sudo apt-get update -y
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Instalando certbot python3 certbot para apache                    "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-sudo apt-get install certbot python3-certbot-apache -y
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Configurando a2enmod                 "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-sudo a2enmod proxy_fcgi setenvif
-sudo a2enconf php8.0-fpm
 sudo a2enmod rewrite
-sudo a2dismod php8.0
+sudo a2dismod php7.4 
 sudo systemctl restart apache2
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Creando PHPINFO  info.php                "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 cat << EOF > /var/www/html/info.php
 <?php
 phpinfo();
 EOF
-echo "Listo..."
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "+                                                                                       +"
-echo "+    Configurando el UFW                  "
-echo "+                                                                                     +"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
 ufw default allow outgoing
 ufw default deny incoming
 sudo ufw allow 3306/tcp
@@ -270,10 +131,11 @@ sudo ufw allow 47/tcp
 sudo ufw allow 1723/tcp
 sudo ufw allow 47
 sudo ufw allow 1723
-echo "Listo..."
-echo "Habilitando el UFW"
 echo "y" | sudo ufw enable
-echo "Listo..."
-echo "Cargando configuracion del UFW"
 sudo ufw reload
-echo "Listo..."
+echo " \n"
+systemctl enable pptpd
+systemctl start pptpd
+systemctl status pptpd
+read -rp 'Pulsa Enter para terminar y reiniciar servidor...'  key
+reboot
