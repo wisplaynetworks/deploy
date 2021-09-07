@@ -5,12 +5,11 @@ ip= $(dig +short myip.opendns.com @resolver1.opendns.com)
 # Installing pptpd
 echo "Installing PPTPD"
 sudo apt-get install pptpd -y
-sudo apt update -y
 
 # edit DNS
 echo "Setting Google DNS"
-sed -i 's/#ms-dns 8.8.8.8/ms-dns 8.8.8.8/g' /etc/ppp/pptpd-options
-sed -i 's/#ms-dns 8.8.4.4/ms-dns 8.8.4.4/g' /etc/ppp/pptpd-options
+sudo echo "ms-dns 8.8.8.8" >> /etc/ppp/pptpd-options
+sudo echo "ms-dns 8.8.4.4" >> /etc/ppp/pptpd-options
 
 # Edit PPTP Configuration
 echo "Editing PPTP Configuration"
@@ -23,33 +22,27 @@ sudo echo "remoteip $remote" >> /etc/pptpd.conf
 echo "Enabling IP forwarding in PPTP server"
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 sudo sysctl -p
+
 if [ -z "$wan" ]
 	then
 		sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE && iptables-save
 		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
+        iptables -A INPUT -p 47 -j ACCEPT
+        iptables -A OUTPUT -p 47 -j ACCEP
 		$("sudo iptables -I INPUT -s $ip/24 -i ppp0 -j ACCEPT")
 		sudo iptables --append FORWARD --in-interface wlan0 -j ACCEPT
 	else
 		sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE && iptables-save
 		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
+        iptables -A INPUT -p 47 -j ACCEPT
+        iptables -A OUTPUT -p 47 -j ACCEP
 		$("sudo iptables -I INPUT -s $ip/24 -i ppp0 -j ACCEPT")
 		sudo iptables --append FORWARD --in-interface eth0 -j ACCEPT
 fi
 
-ufw default allow outgoing
-ufw default deny incoming
-sudo ufw allow 3306/tcp
-sudo ufw allow 47/tcp
-sudo ufw allow 1723/tcp
-sudo ufw allow 22/tcp
-sudo ufw allow 2222/tcp
-sudo ufw allow 80
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw allow 443
-echo "y" | sudo ufw enable
-echo " \n"
-systemctl enable pptpd
-systemctl start pptpd
-systemctl status pptpd
-echo " \n"
+ppp1=$(/sbin/ip route | awk '/default/ { print $3 }') # 192.168.238.255
+
+clear
+
+
+IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')

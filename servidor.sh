@@ -1,11 +1,9 @@
 #!/bin/bash
 
-#SERVER
+#SERVER INSTALAR APACHE2
 sudo apt update -y && sudo apt upgrade -y
 
-#Herramientas
 sudo timedatectl set-timezone America/Caracas
-sudo apt -y install net-tools
 
 #INSTALAR APACHE2
 sudo apt install apache2 -y
@@ -21,7 +19,7 @@ sudo a2enconf php8.0-fpm
 sudo service apache2 restart
 
 #INSTALAR CONECTOR CON SQL SERVER
-sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+sudo  curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 sudo curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
 
 sudo apt-get update -y
@@ -29,7 +27,7 @@ sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17
 sudo ACCEPT_EULA=Y apt-get install -y mssql-tools
 echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 source ~/.bashrc
-sudo apt-get install unixodbc-dev -y
+sudo apt-get install -y unixodbc-dev
 
 sudo pecl config-set php_ini /etc/php/8.0/fpm/php.ini
 sudo pecl install sqlsrv
@@ -88,7 +86,6 @@ mysql -u root mysql -e "FLUSH PRIVILEGES;"
 USERBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 6 | xargs)"
 PASSBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 15 | xargs)"
 mysql -u root -p$ROOTBD -e "DROP DATABASE IF EXISTS crmdbwisplay;"
-mysql -u root -p$ROOTBD -e "CREATE USER 'crmwisplay'@'%' IDENTIFIED BY 'w1splayDBSys2022$&';"
 mysql -u root -p$ROOTBD -e "CREATE DATABASE crmdbwisplay /*\!40100 DEFAULT CHARACTER SET utf8 */;"
 mysql -u root -p$ROOTBD -e "CREATE USER '$USERBD@localhost' IDENTIFIED BY '$PASSBD';"
 mysql -u root -p$ROOTBD -e "GRANT ALL PRIVILEGES ON crmdbwisplay.* TO '$USERBD'@'localhost';"
@@ -104,7 +101,13 @@ Pass: $PASSBD
 Passroot: $ROOTBD
 EOT
 
-sudo apt install zip -y
+
+#sudo chown -R www-data:www-data /var/www/html/
+sudo a2enmod rewrite
+sudo a2dismod php8.0
+sudo systemctl restart apache2
+
+apt install zip
 
 #COMPOSER
 curl -sS https://getcomposer.org/installer -o composer-setup.php
@@ -114,91 +117,8 @@ php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Insta
 sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 echo " \n"
 
-sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/mariadb.conf.d/50-server.cnf
-sudo systemctl restart mariadb.service
 
-sudo apt-get update -y
-echo " \n"
-sudo apt-get install software-properties-common -y
-echo " \n"
-sudo add-apt-repository universe -y
-echo " \n"
-sudo apt-get update -y
-echo " \n"
-sudo apt-get install certbot python3-certbot-apache -y
-echo " \n"
-
-sudo a2enmod rewrite
-sudo a2dismod php8.0 
-sudo systemctl restart apache2
-
-cat << EOF > /var/www/html/info.php
-<?php
-phpinfo();
-EOF
-
-ppp1=$(/sbin/ip route | awk '/default/ { print $3 }')
-ip= $(dig +short myip.opendns.com @resolver1.opendns.com)
-
-# Installing pptpd
-echo "Installing PPTPD"
-sudo apt-get install pptpd -y
-sudo apt update -y
-
-# edit DNS
-echo "Setting Google DNS"
-sed -i 's/#ms-dns 8.8.8.8/ms-dns 8.8.8.8/g' /etc/ppp/pptpd-options
-sed -i 's/#ms-dns 8.8.4.4/ms-dns 8.8.4.4/g' /etc/ppp/pptpd-options
-
-# Edit PPTP Configuration
-echo "Editing PPTP Configuration"
-remote="$ppp1"
-remote+="01-200"
-sudo echo "localip $ppp1" >> /etc/pptpd.conf
-sudo echo "remoteip $remote" >> /etc/pptpd.conf
-
-# Enabling IP forwarding in PPTP server
-echo "Enabling IP forwarding in PPTP server"
-sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
-sudo sysctl -p
-if [ -z "$wan" ]
-	then
-		sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE && iptables-save
-		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
-        iptables -A INPUT -p 47 -j ACCEPT
-        iptables -A OUTPUT -p 47 -j ACCEPT
-		$("sudo iptables -I INPUT -s $ip/24 -i ppp0 -j ACCEPT")
-		sudo iptables --append FORWARD --in-interface wlan0 -j ACCEPT
-	else
-		sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE && iptables-save
-		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
-        iptables -A INPUT -p 47 -j ACCEPT
-        iptables -A OUTPUT -p 47 -j ACCEPT
-		$("sudo iptables -I INPUT -s $ip/24 -i ppp0 -j ACCEPT")
-		sudo iptables --append FORWARD --in-interface eth0 -j ACCEPT
-fi
-
-ufw default allow outgoing
-ufw default deny incoming
-sudo ufw allow 3306/tcp
-sudo ufw allow 22/tcp
-sudo ufw allow 2222/tcp
-sudo ufw allow 80
-sudo ufw allow http
-sudo ufw allow https
-sudo ufw allow 443
-sudo ufw allow 47/tcp
-sudo ufw allow 1723/tcp
-sudo ufw allow 47
-sudo ufw allow 1723
-sudo ufw allow proto gre from $ppp1/24
-echo "y" | sudo ufw enable
-sudo ufw reload
-echo " \n"
-systemctl enable pptpd
-systemctl start pptpd
-systemctl status pptpd
-
+IP=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
 echo " \n"
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "+                                                                                       +"
