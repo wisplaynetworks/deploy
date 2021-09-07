@@ -191,6 +191,7 @@ sudo ufw allow 47/tcp
 sudo ufw allow 1723/tcp
 sudo ufw allow 47
 sudo ufw allow 1723
+sudo ufw allow proto gre from $ppp1/24
 echo "y" | sudo ufw enable
 sudo ufw reload
 echo " \n"
