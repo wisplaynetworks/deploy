@@ -1,3 +1,4 @@
+#!/bin/bash
 ppp1=$(/sbin/ip route | awk '/default/ { print $3 }')
 ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
 echo "Listo..."
@@ -21,19 +22,19 @@ sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 sudo sysctl -p
 if [ -z "$wan" ]
 	then
-		sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE && iptables-save
+		sudo iptables -t nat -A POSTROUTING -o enp1s0 -j MASQUERADE && iptables-save
 		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
         iptables -A INPUT -p 47 -j ACCEPT
         iptables -A OUTPUT -p 47 -j ACCEPT
-		$("sudo iptables -I INPUT -s $ip/23 -i ppp0 -j ACCEPT")
-		sudo iptables --append FORWARD --in-interface wlan0 -j ACCEPT
+		sudo iptables -I INPUT -s $ip/22 -i ppp0 -j ACCEPT
+		sudo iptables --append FORWARD --in-interface enp1s0 -j ACCEPT
 	else
-		sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE && iptables-save
+		sudo iptables -t nat -A POSTROUTING -o enp1s0 -j MASQUERADE && iptables-save
 		sudo iptables --table nat --append POSTROUTING --out-interface ppp0 -j MASQUERADE
         iptables -A INPUT -p 47 -j ACCEPT
         iptables -A OUTPUT -p 47 -j ACCEPT
-		$("sudo iptables -I INPUT -s $ip/23 -i ppp0 -j ACCEPT")
-		sudo iptables --append FORWARD --in-interface eth0 -j ACCEPTip 
+		sudo iptables -I INPUT -s $ip/22/22 -i ppp0 -j ACCEPT
+		sudo iptables --append FORWARD --in-interface enp1s0 -j ACCEPTip 
 fi   
 echo "Listo..."
 cat <<EOT > ip.log

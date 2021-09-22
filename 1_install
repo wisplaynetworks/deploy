@@ -132,5 +132,8 @@ sudo ufw allow 1723
 echo "y" | sudo ufw enable
 sudo ufw reload
 echo " \n"
-read -rp 'Pulsa Enter para terminar y reiniciar servidor...'  key
-reboot
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo "+                                                                                       +"
+echo "+    Servidor, Apache2, MariaDB y SQLsrv Listo  "
+echo "+                                                                                     +"
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
