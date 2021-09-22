@@ -82,7 +82,7 @@ mysql --user="root" --password="" --execute="UPDATE user SET plugin='mysql_nativ
 mysql -u root mysql -e "FLUSH PRIVILEGES;"
 USERBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 6 | xargs)"
 PASSBD="$(tr -dc A-Z1-9 < /dev/urandom | head -c 15 | xargs)"
-mysql -u root -p$ROOTBD -e "DROP DATABASE IF EXISTS crmAnditel;"
+mysql -u root -p$ROOTBD -e "DROP DATABASE IF EXISTS crmanditel;"
 mysql -u root -p$ROOTBD -e "CREATE DATABASE crmanditel /*\!40100 DEFAULT CHARACTER SET utf8 */;"
 mysql -u root -p$ROOTBD -e "CREATE USER '$USERBD@localhost' IDENTIFIED BY '$PASSBD';"
 mysql -u root -p$ROOTBD -e "GRANT ALL PRIVILEGES ON crmanditel.* TO '$USERBD'@'localhost';"
