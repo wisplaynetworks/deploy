@@ -1,0 +1,38 @@
+scp root@45.32.160.100:/root/cobranzabackup.sql C:\Users\[UserName]\Desktop\
+
+
+scp /root/cobranzabackup.sql root@207.246.73.58:/root/
+
+
+CREATE DATABASE crmwisplaydb;
+
+
+
+{
+    "DB":{
+         "_DEFAULT":{
+        "host":"45.32.160.100",
+        "user":"crmwisplay",
+        "pass":"w1splayDBSys2022$&",
+        "port":"3306",
+        "db":"cobranza",
+        "driver":"mysqli"
+
+    },
+    "_PROFIT":{
+        "host":"profit.wisplayservidores.com",
+        "user":"profit",
+        "pass":"profit",
+        "db":"WISP19",
+        "driver":"sqlserver"
+    },
+    "_PROFIT2":{
+        "host":"profit.wisplayservidores.com",
+        "user":"profit",
+        "pass":"profit",
+        "db":"WISP20",
+        "driver":"sqlserver"
+    }
+},
+    "FOLDER":""
+}
